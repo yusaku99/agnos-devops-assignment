@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 3 # Running 3 replicas for high availability and load distribution
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api-container
+        image: yuzana/api-service:latest # Replace with your actual Docker image name
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SECRET_WORD
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: SECRET_WORD
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker-container
+        image: yuzana/worker-service:latest # Replace with your actual Docker image name
