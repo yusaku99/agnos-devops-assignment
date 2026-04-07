@@ -5,13 +5,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
       - name: Lint and Test
-        [cite_start]run: echo "Running lint and tests..." # [cite: 32]
-        
+        run: echo "Running lint and tests..."
+
       - name: Build Container Images
         run: |
           docker build -t api-service ./api
           docker build -t worker-service ./worker
-        [cite_start]# [cite: 33]
