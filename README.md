@@ -21,10 +21,11 @@ To build the container images locally:
 docker build -t api-service ./api
 docker build -t worker-service ./worker
 
-###Kubernetes
+### Kubernetes
 
 To deploy the entire stack to your cluster:
 
+```bash
 # Apply secrets and configurations first
 kubectl apply -f k8s/api-secret.yaml
 
@@ -34,26 +35,21 @@ kubectl apply -f k8s/api-service.yaml
 kubectl apply -f k8s/worker-deployment.yaml
 kubectl apply -f k8s/api-hpa.yaml
 
-##4. Configuration & CI/CD
+## 4. Configuration & CI/CD
+* **Environment Variables**: Managed via Kubernetes Secrets and ConfigMaps to separate configurations for **DEV, UAT, and PROD** environments.
+* **CI/CD Pipeline**: Our GitHub Actions workflow automates the following stages:
+    * Linting and code quality checks.
+    * Building multi-stage Docker images.
+    * Deployment to the Kubernetes cluster.
 
-    Environment Variables: Managed via Kubernetes Secrets and ConfigMaps to separate configurations for DEV, UAT, and PROD environments.
+## 5. Failure Scenario Handling
+| Scenario | Resolution Strategy |
+| :--- | :--- |
+| **API crashes during peak hours** | Kubernetes automatically restarts failed pods via **Liveness Probes**. The **Horizontal Pod Autoscaler (HPA)** scales replicas up to 5 pods based on CPU utilization to handle load. |
+| **Worker fails and infinitely retries** | We monitor high error rates and stalled workers via **Prometheus alerts**. Structured **JSON logs** allow for rapid troubleshooting of task failures. |
+| **Bad deployment is released** | We utilize `kubectl rollout undo` for immediate rollback to the last stable version. |
+| **Kubernetes node goes down** | Due to our **High Availability** design and Pod Anti-Affinity, Kubernetes automatically reschedules pods to remaining healthy nodes. |
 
-    CI/CD Pipeline: Our GitHub Actions workflow automates the following stages:
-
-        Linting and code quality checks.
-
-        Building multi-stage Docker images.
-
-        Deployment to the Kubernetes cluster.
-
-##5. Failure Scenario Handling
-Scenario	Resolution Strategy
-API crashes during peak hours	Kubernetes automatically restarts failed pods via Liveness Probes. The Horizontal Pod Autoscaler (HPA) scales replicas up to 5 pods based on CPU utilization to handle load.
-Worker fails and infinitely retries	We monitor high error rates and stalled workers via Prometheus alerts. Structured JSON logs allow for rapid troubleshooting of task failures.
-Bad deployment is released	We utilize kubectl rollout undo for immediate rollback to the last stable version.
-Kubernetes node goes down	Due to our High Availability design and Pod Anti-Affinity, Kubernetes automatically reschedules pods to remaining healthy nodes.
-##6. Observability
-
-    Logging: Both services implement structured JSON logging to facilitate centralized log management and analysis.
-
-    Monitoring: Metrics such as request latency and error rates are tracked, with automated alerts for high error rates or crash looping pods.
+## 6. Observability
+* **Logging**: Both services implement structured JSON logging to facilitate centralized log management and analysis.
+* **Monitoring**: Metrics such as request latency and error rates are tracked, with automated alerts for high error rates or crash looping pods.
