@@ -36,24 +36,28 @@ kubectl apply -f k8s/api-service.yaml
 kubectl apply -f k8s/worker-deployment.yaml
 kubectl apply -f k8s/api-hpa.yaml
 
-## 4. Configuration & CI/CD
+4. Configuration & CI/CD
 
-* **Environment Variables**: Managed via Kubernetes Secrets and ConfigMaps to separate configurations for **DEV, UAT, and PROD** environments.
-* **CI/CD Pipeline**: Our GitHub Actions workflow automates the following stages:
-    * Linting and code quality checks.
-    * Building multi-stage Docker images.
-    * Deployment to the Kubernetes cluster.
+    Environment Variables: Managed via Kubernetes Secrets and ConfigMaps for DEV, UAT, and PROD.
 
-## 5. Failure Scenario Handling
+    CI/CD Pipeline: Our GitHub Actions workflow automates the following stages:
 
-| Scenario | Resolution Strategy |
-| :--- | :--- |
-| **API crashes during peak hours** | Kubernetes automatically restarts failed pods via **Liveness Probes**. The **Horizontal Pod Autoscaler (HPA)** scales replicas to handle load. |
-| **Worker fails and infinitely retries** | We monitor high error rates via **Prometheus alerts**. Structured **JSON logs** allow for rapid troubleshooting. |
-| **Bad deployment is released** | We utilize `kubectl rollout undo` for immediate rollback to the last stable version. |
-| **Kubernetes node goes down** | Due to High Availability design, Kubernetes automatically reschedules pods to remaining healthy nodes. |
+        Linting and code quality checks.
 
-## 6. Observability
+        Building multi-stage Docker images.
 
-* **Logging**: Both services implement structured JSON logging to facilitate centralized log management and analysis.
-* **Monitoring**: Metrics such as request latency and error rates are tracked, with automated alerts.
+        Deployment to the Kubernetes cluster.
+
+5. Failure Scenario Handling
+
+Scenario	Resolution Strategy
+API crashes during peak hours	Kubernetes automatically restarts failed pods via Liveness Probes. The Horizontal Pod Autoscaler (HPA) scales replicas to handle load.
+Worker fails and infinitely retries	We monitor high error rates via Prometheus alerts. Structured JSON logs allow for rapid troubleshooting.
+Bad deployment is released	We utilize kubectl rollout undo for immediate rollback to the last stable version.
+Kubernetes node goes down	Due to High Availability design, Kubernetes automatically reschedules pods to healthy nodes.
+
+6. Observability
+
+    Logging: Both services implement structured JSON logging to facilitate centralized analysis.
+
+    Monitoring: Metrics such as request latency and error rates are tracked, with automated alerts for failures.
